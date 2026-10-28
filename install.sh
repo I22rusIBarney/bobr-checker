@@ -26,7 +26,7 @@ print_credentials() {
   printf 'Панель: https://%s\n' "$DOMAIN"
   printf 'Логин:  %s\n' "$AUTH_USER"
   printf 'Пароль: %s\n' "$AUTH_PASS"
-  printf '\nКоманды: bobr-checker status | logs | restart | update\n'
+  printf '\nКоманды: bcheck update | bobr-checker status | logs | restart | update\n'
   printf 'Логи Caddy: docker logs -f bobr-cloud-caddy\n'
   printf 'Настройки: %s/.env\n' "$INSTALL_DIR"
   printf '========================================\n'
@@ -105,7 +105,10 @@ if [[ -f "$INSTALL_DIR/.env" && -f "$INSTALL_DIR/docker-compose.yml" ]]; then
     docker compose config -q || die "Конфигурация предыдущей установки некорректна. Проверьте $INSTALL_DIR/.env."
     docker compose pull
     docker compose up -d --remove-orphans
+    mkdir -p /etc/bobr-checker
+    printf '%s\\n' "$SRC_DIR" > /etc/bobr-checker/source-dir
     install -m 755 "$SRC_DIR/cli.sh" /usr/local/bin/bobr-checker
+    ln -sf /usr/local/bin/bobr-checker /usr/local/bin/bcheck
     info "Проверяю Checker..."
     if ! wait_for_checker; then
       docker compose logs --tail=80 checker || true
@@ -247,7 +250,10 @@ cat > "$INSTALL_DIR/Caddyfile" <<'EOF'
 }
 EOF
 
+mkdir -p /etc/bobr-checker
+printf '%s\\n' "$SRC_DIR" > /etc/bobr-checker/source-dir
 install -m 755 "$SRC_DIR/cli.sh" /usr/local/bin/bobr-checker
+ln -sf /usr/local/bin/bobr-checker /usr/local/bin/bcheck
 
 info "Загружаю образы и запускаю Bobr Checker..."
 cd "$INSTALL_DIR"
