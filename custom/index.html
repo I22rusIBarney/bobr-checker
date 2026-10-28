@@ -566,6 +566,21 @@
       </div>
     </template>
 
+    <!-- Always-accessible host visibility control; independent of the servers header. -->
+    <button
+      type="button"
+      x-show="!badgeMode"
+      @click="settingsOpen = !settingsOpen; if (settingsOpen) $nextTick(() => document.getElementById('server-visibility-settings')?.scrollIntoView({ behavior: 'auto', block: 'nearest' }))"
+      class="visibility-fab btn px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-2"
+      :class="settingsOpen && 'btn-active'"
+      aria-label="Управление отображением серверов"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M7 12h10m-7 6h4"/>
+      </svg>
+      Хосты
+    </button>
+
     <!-- Toast -->
     <div x-show="!badgeMode" class="fixed top-4 right-4 z-50">
       <template x-for="t in toasts" :key="t.id">
@@ -743,17 +758,6 @@
         <div class="flex items-center gap-2">
           <h2 class="text-base font-semibold text-primary">Серверы</h2>
         </div>
-        <button
-          type="button"
-          @click="settingsOpen = !settingsOpen"
-          class="btn btn-active px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2"
-          aria-label="Показать или скрыть серверы"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M7 12h10m-7 6h4"/>
-          </svg>
-          Хосты
-        </button>
         {{ if not .IsPublic }}
         <div class="flex flex-wrap items-center gap-2">
           <a
