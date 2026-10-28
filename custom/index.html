@@ -932,25 +932,50 @@
         </div>
       </div>
 
-      <section x-show="settingsOpen" x-transition class="card rounded-xl p-4 mb-4 space-y-3">
+      <section x-show="settingsOpen" x-transition class="card rounded-xl p-4 mb-4 space-y-4">
         <div class="flex items-center justify-between gap-3">
           <div>
-            <h3 class="text-sm font-semibold text-primary">Настройки отображения</h3>
-            <p class="text-xs text-muted mt-1">Фильтры меняют только список на этой странице. Проверки и метрики продолжают работать для всех узлов.</p>
+            <h3 class="text-sm font-semibold text-primary">Отображение серверов</h3>
+            <p class="text-xs text-muted mt-1">Скрытие влияет только на интерфейс. Проверки и статистика продолжают работать для всех узлов.</p>
           </div>
           <button @click="settingsOpen = false" class="btn px-3 py-1.5 rounded-lg text-xs">Закрыть</button>
         </div>
-        <label class="block">
-          <span class="text-xs text-secondary">Скрывать заголовки групп по шаблонам (через запятую)</span>
-          <input x-model="hiddenGroupPatterns" @change="saveVisibilitySettings()" class="w-full mt-1 px-3 py-2 rounded-lg text-sm" placeholder="АВТО-ВЫБОР,AUTO-ВЫБОР,AUTO-SELECT,AUTO SELECT" />
-          <span class="text-xs text-muted block mt-1">Сами узлы внутри скрытых групп останутся в списке. По умолчанию скрывается только заголовок AUTO-SELECT.</span>
-        </label>
-        <label class="block">
-          <span class="text-xs text-secondary">Скрывать отдельные узлы по имени (через запятую)</span>
-          <input x-model="hiddenProxyPatterns" @change="saveVisibilitySettings()" class="w-full mt-1 px-3 py-2 rounded-lg text-sm" placeholder="АВТО-ВЫБОР,AUTO-SELECT" />
-        </label>
+        <div class="flex flex-wrap gap-2">
+          <button @click="showAllVisibility()" class="btn px-3 py-1.5 rounded-lg text-xs">Показать всё</button>
+          <button @click="hideAllVisibility()" class="btn px-3 py-1.5 rounded-lg text-xs">Скрыть всё</button>
+        </div>
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <h4 class="text-sm font-medium text-primary">Группы</h4>
+            <span class="text-xs text-muted" x-text="visibleGroupCount + ' из ' + visibilityGroups.length"></span>
+          </div>
+          <template x-for="group in visibilityGroups" :key="'visibility-group-' + group.name">
+            <label class="flex items-center gap-3 rounded-lg card-flat px-3 py-2.5">
+              <input type="checkbox" class="w-4 h-4" :checked="!isGroupHidden(group.name)" @change="setGroupVisibility(group.name, $event.target.checked)" />
+              <span class="text-sm text-primary flex-1 truncate" x-text="group.name"></span>
+              <span class="text-xs text-muted" x-text="group.count + ' узл.'"></span>
+            </label>
+          </template>
+        </div>
+        <div class="space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <h4 class="text-sm font-medium text-primary">Отдельные серверы</h4>
+            <span class="text-xs text-muted" x-text="visibleProxyCount + ' из ' + proxies.length"></span>
+          </div>
+          <input x-model="visibilitySearch" class="w-full px-3 py-2 rounded-lg text-sm" placeholder="Найти сервер..." />
+          <div class="max-h-72 overflow-y-auto space-y-1 pr-1">
+            <template x-for="proxy in visibilityProxies" :key="'visibility-proxy-' + proxy.stableId">
+              <label class="flex items-center gap-3 rounded-lg card-flat px-3 py-2">
+                <input type="checkbox" class="w-4 h-4 flex-shrink-0" :checked="!isProxyHidden(proxy.stableId)" @change="setProxyVisibility(proxy.stableId, $event.target.checked)" />
+                <span class="text-sm text-primary flex-1 min-w-0 truncate" x-text="proxy.name"></span>
+                <span class="text-xs flex-shrink-0" :class="proxy.status ? 'latency-good' : 'latency-bad'" x-text="proxy.status ? 'Online' : 'Offline'"></span>
+              </label>
+            </template>
+            <p x-show="visibilityProxies.length === 0" class="text-xs text-muted text-center py-4">Серверы не найдены</p>
+          </div>
+        </div>
         <div class="flex justify-end">
-          <button @click="hiddenGroupPatterns='АВТО-ВЫБОР,AUTO-ВЫБОР,AUTO-SELECT,AUTO SELECT'; hiddenProxyPatterns='АВТО-ВЫБОР,AUTO-ВЫБОР,AUTO-SELECT,AUTO SELECT'; saveVisibilitySettings()" class="btn px-3 py-1.5 rounded-lg text-xs">Сбросить фильтры</button>
+          <button @click="resetVisibility()" class="btn px-3 py-1.5 rounded-lg text-xs">Сбросить настройки</button>
         </div>
       </section>
 
@@ -1207,28 +1232,66 @@
 
           collapsedGroups: {},
           settingsOpen: false,
-          hiddenGroupPatterns: localStorage.getItem('hiddenGroupPatterns') || 'АВТО-ВЫБОР,AUTO-ВЫБОР,AUTO-SELECT,AUTO SELECT',
-          hiddenProxyPatterns: localStorage.getItem('hiddenProxyPatterns') || 'АВТО-ВЫБОР,AUTO-ВЫБОР,AUTO-SELECT,AUTO SELECT',
-          get hiddenGroupRegexes() {
-            return this.hiddenGroupPatterns.split(',').map(s => s.trim()).filter(Boolean).map(s => {
-              try { return new RegExp(s, 'i'); } catch { return null; }
-            }).filter(Boolean);
+          visibilitySearch: '',
+          hiddenGroupNames: JSON.parse(localStorage.getItem('hiddenGroupNames') || '[]'),
+          hiddenProxyIds: JSON.parse(localStorage.getItem('hiddenProxyIds') || '[]'),
+          get visibilityGroups() {
+            const groups = new Map();
+            for (const p of this.proxies) {
+              if (!p.groupName) continue;
+              if (!groups.has(p.groupName)) groups.set(p.groupName, 0);
+              groups.set(p.groupName, groups.get(p.groupName) + 1);
+            }
+            return [...groups.entries()].map(([name, count]) => ({ name, count }));
           },
-          get hiddenProxyRegexes() {
-            return this.hiddenProxyPatterns.split(',').map(s => s.trim()).filter(Boolean).map(s => {
-              try { return new RegExp(s, 'i'); } catch { return null; }
-            }).filter(Boolean);
+          get visibilityProxies() {
+            const q = this.visibilitySearch.trim().toLowerCase();
+            return this.proxies.filter(p => !q || p.name.toLowerCase().includes(q) || (p.serverInfo || '').toLowerCase().includes(q));
           },
-          isHiddenGroup(name) {
-            return this.hiddenGroupRegexes.some(re => re.test(name || ''));
+          get visibleGroupCount() {
+            return this.visibilityGroups.filter(g => !this.isGroupHidden(g.name)).length;
           },
-          isHiddenProxy(name) {
-            return this.hiddenProxyRegexes.some(re => re.test(name || ''));
+          get visibleProxyCount() {
+            return this.proxies.filter(p => !this.isProxyHidden(p.stableId)).length;
+          },
+          isGroupHidden(name) {
+            return this.hiddenGroupNames.includes(name) || /авто-выбор|auto[- ]?select/i.test(name || '');
+          },
+          isProxyHidden(id) {
+            const p = this.proxies.find(item => item.stableId === id);
+            return this.hiddenProxyIds.includes(id) || !!(p && /авто-выбор|auto[- ]?select/i.test(p.name || ''));
           },
           saveVisibilitySettings() {
-            localStorage.setItem('hiddenGroupPatterns', this.hiddenGroupPatterns);
-            localStorage.setItem('hiddenProxyPatterns', this.hiddenProxyPatterns);
+            localStorage.setItem('hiddenGroupNames', JSON.stringify(this.hiddenGroupNames));
+            localStorage.setItem('hiddenProxyIds', JSON.stringify(this.hiddenProxyIds));
             this.collapsedGroups = {};
+          },
+          setGroupVisibility(name, visible) {
+            const hidden = new Set(this.hiddenGroupNames);
+            if (visible) hidden.delete(name); else hidden.add(name);
+            this.hiddenGroupNames = [...hidden];
+            this.saveVisibilitySettings();
+          },
+          setProxyVisibility(id, visible) {
+            const hidden = new Set(this.hiddenProxyIds);
+            if (visible) hidden.delete(id); else hidden.add(id);
+            this.hiddenProxyIds = [...hidden];
+            this.saveVisibilitySettings();
+          },
+          showAllVisibility() {
+            this.hiddenGroupNames = [];
+            this.hiddenProxyIds = [];
+            this.saveVisibilitySettings();
+          },
+          hideAllVisibility() {
+            this.hiddenGroupNames = this.visibilityGroups.map(g => g.name);
+            this.hiddenProxyIds = this.proxies.map(p => p.stableId);
+            this.saveVisibilitySettings();
+          },
+          resetVisibility() {
+            this.hiddenGroupNames = [];
+            this.hiddenProxyIds = [];
+            this.saveVisibilitySettings();
           },
 
           proxies: [
@@ -1257,7 +1320,7 @@
           },
 
           get filteredProxies() {
-            let r = this.proxies.filter(p => !this.hiddenProxyRegexes.some(re => re.test(p.name || '')));
+            let r = this.proxies.filter(p => !this.isProxyHidden(p.stableId) && !(p.groupName && this.isGroupHidden(p.groupName)));
             if (this.search) {
               const q = this.search.toLowerCase();
               r = r.filter(p => p.name.toLowerCase().includes(q) || (p.serverInfo && p.serverInfo.toLowerCase().includes(q)));
@@ -1324,13 +1387,11 @@
             const items = [];
             for (const b of this.proxyBlocks) {
               if (b.group) {
-                if (!this.isHiddenGroup(b.group)) items.push({ type: 'header', key: 'h:' + b.group, block: b });
-                if (this.collapsedGroups[b.group] && !this.isHiddenGroup(b.group)) continue;
+                if (!this.isGroupHidden(b.group)) items.push({ type: 'header', key: 'h:' + b.group, block: b });
+                if (this.collapsedGroups[b.group] && !this.isGroupHidden(b.group)) continue;
               }
               for (const p of b.proxies) {
-                // Hide virtual AUTO-SELECT/balancer proxy cards in the UI only.
-                // Real endpoints remain in the source list and continue to be checked.
-                if (this.isHiddenProxy(p.name)) continue;
+                if (this.isProxyHidden(p.stableId)) continue;
                 items.push({ type: 'proxy', key: p.stableId, proxy: p });
               }
             }
