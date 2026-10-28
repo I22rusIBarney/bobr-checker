@@ -1255,11 +1255,11 @@
             return this.proxies.filter(p => !this.isProxyHidden(p.stableId)).length;
           },
           isGroupHidden(name) {
-            return this.hiddenGroupNames.includes(name) || /авто-выбор|auto[- ]?select/i.test(name || '');
+            return this.hiddenGroupNames.includes(name);
           },
           isProxyHidden(id) {
             const p = this.proxies.find(item => item.stableId === id);
-            return this.hiddenProxyIds.includes(id) || !!(p && /авто-выбор|auto[- ]?select/i.test(p.name || ''));
+            return this.hiddenProxyIds.includes(id);
           },
           saveVisibilitySettings() {
             localStorage.setItem('hiddenGroupNames', JSON.stringify(this.hiddenGroupNames));
@@ -1404,6 +1404,17 @@
 
           init() {
             const params = new URLSearchParams(window.location.search);
+
+            // Preserve the previous default: hide AUTO-SELECT labels on first visit.
+            if (localStorage.getItem('hiddenGroupNames') === null && localStorage.getItem('hiddenProxyIds') === null) {
+              this.hiddenGroupNames = this.visibilityGroups
+                .filter(g => /авто-выбор|auto[- ]?select/i.test(g.name))
+                .map(g => g.name);
+              this.hiddenProxyIds = this.proxies
+                .filter(p => /авто-выбор|auto[- ]?select/i.test(p.name || ''))
+                .map(p => p.stableId);
+              this.saveVisibilitySettings();
+            }
 
             // Check for badge mode
             const stableId = params.get('stableId');
