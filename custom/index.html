@@ -947,10 +947,10 @@
         </label>
         <label class="block">
           <span class="text-xs text-secondary">Скрывать отдельные узлы по имени (через запятую)</span>
-          <input x-model="hiddenProxyPatterns" @change="saveVisibilitySettings()" class="w-full mt-1 px-3 py-2 rounded-lg text-sm" placeholder="например: test-, old-" />
+          <input x-model="hiddenProxyPatterns" @change="saveVisibilitySettings()" class="w-full mt-1 px-3 py-2 rounded-lg text-sm" placeholder="АВТО-ВЫБОР,AUTO-SELECT" />
         </label>
         <div class="flex justify-end">
-          <button @click="hiddenGroupPatterns='АВТО-ВЫБОР,AUTO-ВЫБОР,AUTO-SELECT,AUTO SELECT'; hiddenProxyPatterns=''; saveVisibilitySettings()" class="btn px-3 py-1.5 rounded-lg text-xs">Сбросить фильтры</button>
+          <button @click="hiddenGroupPatterns='АВТО-ВЫБОР,AUTO-ВЫБОР,AUTO-SELECT,AUTO SELECT'; hiddenProxyPatterns='АВТО-ВЫБОР,AUTO-ВЫБОР,AUTO-SELECT,AUTO SELECT'; saveVisibilitySettings()" class="btn px-3 py-1.5 rounded-lg text-xs">Сбросить фильтры</button>
         </div>
       </section>
 
@@ -1208,7 +1208,7 @@
           collapsedGroups: {},
           settingsOpen: false,
           hiddenGroupPatterns: localStorage.getItem('hiddenGroupPatterns') || 'АВТО-ВЫБОР,AUTO-ВЫБОР,AUTO-SELECT,AUTO SELECT',
-          hiddenProxyPatterns: localStorage.getItem('hiddenProxyPatterns') || '',
+          hiddenProxyPatterns: localStorage.getItem('hiddenProxyPatterns') || 'АВТО-ВЫБОР,AUTO-ВЫБОР,AUTO-SELECT,AUTO SELECT',
           get hiddenGroupRegexes() {
             return this.hiddenGroupPatterns.split(',').map(s => s.trim()).filter(Boolean).map(s => {
               try { return new RegExp(s, 'i'); } catch { return null; }
@@ -1221,6 +1221,9 @@
           },
           isHiddenGroup(name) {
             return this.hiddenGroupRegexes.some(re => re.test(name || ''));
+          },
+          isHiddenProxy(name) {
+            return this.hiddenProxyRegexes.some(re => re.test(name || ''));
           },
           saveVisibilitySettings() {
             localStorage.setItem('hiddenGroupPatterns', this.hiddenGroupPatterns);
@@ -1325,6 +1328,9 @@
                 if (this.collapsedGroups[b.group] && !this.isHiddenGroup(b.group)) continue;
               }
               for (const p of b.proxies) {
+                // Hide virtual AUTO-SELECT/balancer proxy cards in the UI only.
+                // Real endpoints remain in the source list and continue to be checked.
+                if (this.isHiddenProxy(p.name)) continue;
                 items.push({ type: 'proxy', key: p.stableId, proxy: p });
               }
             }
