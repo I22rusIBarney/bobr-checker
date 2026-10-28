@@ -287,6 +287,26 @@
         color: var(--color-green);
       }
 
+      /* Keep the dashboard visually still: no pulsing status dots or card entrance motion. */
+      .pulse::after { display: none !important; }
+      .proxy-card.animate { animation: none !important; }
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+      }
+
+      .visibility-fab {
+        position: fixed;
+        z-index: 60;
+        right: 16px;
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 96px);
+        box-shadow: 0 8px 28px rgba(0,0,0,.38);
+      }
+      @media (min-width: 640px) {
+        .visibility-fab { bottom: 24px; }
+      }
+
       /* Pulse animation for online status */
       .pulse::after {
         content: "";
@@ -545,6 +565,20 @@
         </div>
       </div>
     </template>
+
+    <!-- Always-accessible host visibility control -->
+    <button
+      x-show="!badgeMode"
+      @click="settingsOpen = !settingsOpen; if (settingsOpen) $nextTick(() => document.getElementById('server-visibility-settings')?.scrollIntoView({ behavior: 'auto', block: 'nearest' }))"
+      class="visibility-fab btn px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-2"
+      :class="settingsOpen && 'btn-active'"
+      aria-label="Управление отображением серверов"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M7 12h10m-7 6h4"/>
+      </svg>
+      Хосты
+    </button>
 
     <!-- Toast -->
     <div x-show="!badgeMode" class="fixed top-4 right-4 z-50">
@@ -946,7 +980,7 @@
         </button>
       </div>
 
-      <section x-show="settingsOpen" x-transition class="card rounded-xl p-4 mb-4 space-y-4">
+      <section id="server-visibility-settings" x-show="settingsOpen" class="card rounded-xl p-4 mb-4 space-y-4">
         <div class="flex items-center justify-between gap-3">
           <div>
             <h3 class="text-sm font-semibold text-primary">Отображение серверов</h3>
@@ -1026,8 +1060,7 @@
             <!-- Proxy card -->
             <template x-if="item.type === 'proxy'">
               <div
-                class="proxy-card group card rounded-lg px-3 py-2.5 flex items-center gap-3 transition-all duration-150"
-                :class="initialLoad && 'animate'"
+                class="proxy-card group card rounded-lg px-3 py-2.5 flex items-center gap-3"
               >
                 <!-- Status dot -->
                 <div class="relative flex-shrink-0">
