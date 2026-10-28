@@ -106,7 +106,7 @@ if [[ -f "$INSTALL_DIR/.env" && -f "$INSTALL_DIR/docker-compose.yml" ]]; then
     docker compose pull
     docker compose up -d --remove-orphans
     mkdir -p /etc/bobr-checker
-    printf '%s\\n' "$SRC_DIR" > /etc/bobr-checker/source-dir
+    printf '%s\n' "$SRC_DIR" > /etc/bobr-checker/source-dir
     install -m 755 "$SRC_DIR/cli.sh" /usr/local/bin/bobr-checker
     ln -sf /usr/local/bin/bobr-checker /usr/local/bin/bcheck
     info "Проверяю Checker..."
@@ -251,7 +251,7 @@ cat > "$INSTALL_DIR/Caddyfile" <<'EOF'
 EOF
 
 mkdir -p /etc/bobr-checker
-printf '%s\\n' "$SRC_DIR" > /etc/bobr-checker/source-dir
+printf '%s\n' "$SRC_DIR" > /etc/bobr-checker/source-dir
 install -m 755 "$SRC_DIR/cli.sh" /usr/local/bin/bobr-checker
 ln -sf /usr/local/bin/bobr-checker /usr/local/bin/bcheck
 
