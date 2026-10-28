@@ -11,8 +11,9 @@ case "${1:-help}" in
     [[ -f "$DIR/.env" ]] || { echo "Не найден $DIR/.env"; exit 1; }
     SOURCE_FILE="/etc/bobr-checker/source-dir"
     [[ -s "$SOURCE_FILE" ]] || { echo "Не найден путь к Git-репозиторию: $SOURCE_FILE"; exit 1; }
-    SRC_DIR="$(cat "$SOURCE_FILE")"
-    [[ -d "$SRC_DIR/.git" ]] || { echo "Git-репозиторий не найден: $SRC_DIR"; exit 1; }
+    # Strip line endings and the literal \n written by older installer builds.
+    SRC_DIR="$(tr -d '\r\n' < "$SOURCE_FILE" | sed 's/\\n$//; s/[[:space:]]*$//')"
+    [[ -d "$SRC_DIR/.git" ]] || { echo "Git-репозиторий не найден: [$SRC_DIR]"; exit 1; }
 
     echo "1/5 Проверяю и обновляю исходники..."
     git -C "$SRC_DIR" pull --ff-only
