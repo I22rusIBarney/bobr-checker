@@ -54,6 +54,7 @@ case "${1:-help}" in
     docker compose config -q
     docker compose pull
     docker compose up -d --remove-orphans
+    docker compose restart caddy >/dev/null 2>&1 || true
 
     echo "4/5 Обновляю команду управления..."
     install -m 755 "$SRC_DIR/cli.sh" /usr/local/bin/bobr-checker
@@ -93,6 +94,7 @@ case "${1:-help}" in
 
     echo "Перезапускаю сервисы..."
     docker compose up -d --remove-orphans
+    docker compose restart caddy >/dev/null 2>&1 || true
     d="$(get_domain)"
     echo "----------------------------------------"
     echo "Готово! Ссылки API для вашего бота:"
