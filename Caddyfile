@@ -1,6 +1,11 @@
 {$DOMAIN} {
     encode zstd gzip
 
+    # Управление группами (чтение и переименование)
+    handle /api/groups* {
+        reverse_proxy group-api:2115
+    }
+
     # API для 1-й группы (моя)
     handle /api/my/* {
         uri strip_prefix /api/my

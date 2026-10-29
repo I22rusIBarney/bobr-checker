@@ -65,6 +65,21 @@ services:
       start_period: 45s
     stop_grace_period: 30s
 
+  group-api:
+    image: python:3.9-alpine
+    container_name: bobr-cloud-group-api
+    restart: unless-stopped
+    volumes:
+      - ./data:/data
+      - ./api:/app/api:ro
+    command: ["python3", "-c", "import sys, os; sys.path.append('/app'); from api import server; server.run()"]
+    environment:
+      - DATA_DIR=/data
+      - PORT=2115
+    expose:
+      - "2115"
+    restart: unless-stopped
+
   caddy:
     image: caddy:2-alpine
     container_name: bobr-cloud-caddy
