@@ -77,6 +77,7 @@ case "${1:-help}" in
   config)
     echo "=== Настройка подписок по группам ==="
     current_my="$(grep '^SUB_URL_MY=' "$DIR/.env" 2>/dev/null | cut -d= -f2- | tr -d "'\"" || true)"
+    [[ -n "$current_my" ]] || current_my="$(grep '^SUBSCRIPTION_URL=' "$DIR/.env" 2>/dev/null | cut -d= -f2- | tr -d "'\"" || true)"
     current_f1="$(grep '^SUB_URL_FRIEND1=' "$DIR/.env" 2>/dev/null | cut -d= -f2- | tr -d "'\"" || true)"
     current_f2="$(grep '^SUB_URL_FRIEND2=' "$DIR/.env" 2>/dev/null | cut -d= -f2- | tr -d "'\"" || true)"
 
