@@ -1,0 +1,26 @@
+{$DOMAIN} {
+    encode zstd gzip
+
+    # API для 1-й группы (моя)
+    handle /api/my/* {
+        uri strip_prefix /api/my
+        reverse_proxy checker-my:2112
+    }
+
+    # API для 2-й группы (друг 1)
+    handle /api/friend1/* {
+        uri strip_prefix /api/friend1
+        reverse_proxy checker-friend1:2113
+    }
+
+    # API для 3-й группы (друг 2)
+    handle /api/friend2/* {
+        uri strip_prefix /api/friend2
+        reverse_proxy checker-friend2:2114
+    }
+
+    # Основная веб-панель (по умолчанию показывает мою группу)
+    handle {
+        reverse_proxy checker-my:2112
+    }
+}

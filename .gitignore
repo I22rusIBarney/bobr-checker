@@ -1,0 +1,7 @@
+.env
+.env.*
+caddy_data/
+caddy_config/
+geo/
+*.backup.*
+.DS_Store

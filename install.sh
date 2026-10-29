@@ -42,7 +42,7 @@ check_local_https() {
 wait_for_checker() {
   local i
   for i in $(seq 1 45); do
-    if docker compose exec -T checker curl -fsS http://127.0.0.1:2112/health >/dev/null 2>&1; then return 0; fi
+    if docker compose exec -T checker-my curl -fsS http://127.0.0.1:2112/health >/dev/null 2>&1; then return 0; fi
     sleep 2
   done
   return 1
@@ -100,6 +100,8 @@ if [[ -f "$INSTALL_DIR/.env" && -f "$INSTALL_DIR/docker-compose.yml" ]]; then
     # Refresh the dashboard template/assets from the repository on every rerun.
     mkdir -p "$INSTALL_DIR/custom"
     cp -a "$SRC_DIR/custom/." "$INSTALL_DIR/custom/"
+    cp -a "$SRC_DIR/Caddyfile" "$INSTALL_DIR/Caddyfile"
+    cp -a "$SRC_DIR/docker-compose.yml" "$INSTALL_DIR/docker-compose.yml"
     chown -R 1000:1000 "$INSTALL_DIR/custom"
     set_env "SUBSCRIPTION_JSON_FORMAT" "true"
     docker compose config -q || die "Конфигурация предыдущей установки некорректна. Проверьте $INSTALL_DIR/.env."
@@ -111,7 +113,7 @@ if [[ -f "$INSTALL_DIR/.env" && -f "$INSTALL_DIR/docker-compose.yml" ]]; then
     ln -sf /usr/local/bin/bobr-checker /usr/local/bin/bcheck
     info "Проверяю Checker..."
     if ! wait_for_checker; then
-      docker compose logs --tail=80 checker || true
+      docker compose logs --tail=80 checker-my || true
       die "Checker не прошёл healthcheck. Реквизиты не выведены, поскольку установка не прошла проверку."
     fi
     ok "Checker работает."
@@ -214,6 +216,7 @@ fi
 
 mkdir -p "$INSTALL_DIR/geo" "$INSTALL_DIR/custom" "$INSTALL_DIR/caddy_data" "$INSTALL_DIR/caddy_config"
 cp "$SRC_DIR/docker-compose.yml" "$INSTALL_DIR/docker-compose.yml"
+cp "$SRC_DIR/Caddyfile" "$INSTALL_DIR/Caddyfile"
 cp "$SRC_DIR/README.md" "$INSTALL_DIR/README.md"
 cp "$SRC_DIR/custom/"* "$INSTALL_DIR/custom/"
 chown -R 1000:1000 "$INSTALL_DIR/geo" "$INSTALL_DIR/custom"
@@ -240,15 +243,11 @@ LOG_LEVEL=info
 EOF
 fi
 set_env "SUBSCRIPTION_URL" "$SUB_URL"
+set_env "SUB_URL_MY" "$SUB_URL"
+set_env "SUB_URL_FRIEND1" "$SUB_URL"
+set_env "SUB_URL_FRIEND2" "$SUB_URL"
 set_env "DOMAIN" "$DOMAIN"
 chmod 600 "$INSTALL_DIR/.env"
-
-cat > "$INSTALL_DIR/Caddyfile" <<'EOF'
-{$DOMAIN} {
-    encode zstd gzip
-    reverse_proxy checker:2112
-}
-EOF
 
 mkdir -p /etc/bobr-checker
 printf '%s\n' "$SRC_DIR" > /etc/bobr-checker/source-dir
@@ -265,7 +264,7 @@ info "Жду готовности Checker..."
 if wait_for_checker; then
   ok "Checker отвечает."
 else
-  docker compose logs --tail=80 checker || true
+  docker compose logs --tail=80 checker-my || true
   die "Checker не прошёл healthcheck. Проверьте логи выше."
 fi
 

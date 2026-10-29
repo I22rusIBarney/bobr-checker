@@ -1,9 +1,12 @@
 services:
-  checker:
+  checker-my:
     image: kutovoys/xray-checker:latest
-    container_name: bobr-cloud-checker
+    container_name: bobr-cloud-checker-my
     restart: unless-stopped
     env_file: .env
+    environment:
+      - METRICS_PORT=2112
+      - SUBSCRIPTION_URL=${SUB_URL_MY:-${SUBSCRIPTION_URL}}
     expose:
       - "2112"
     volumes:
@@ -14,7 +17,46 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 45s
+    stop_grace_period: 30s
+
+  checker-friend1:
+    image: kutovoys/xray-checker:latest
+    container_name: bobr-cloud-checker-friend1
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - METRICS_PORT=2113
+      - SUBSCRIPTION_URL=${SUB_URL_FRIEND1:-${SUBSCRIPTION_URL}}
+    expose:
+      - "2113"
+    volumes:
+      - ./geo:/app/geo
+      - ./custom:/app/custom:ro
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:2113/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    stop_grace_period: 30s
+
+  checker-friend2:
+    image: kutovoys/xray-checker:latest
+    container_name: bobr-cloud-checker-friend2
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - METRICS_PORT=2114
+      - SUBSCRIPTION_URL=${SUB_URL_FRIEND2:-${SUBSCRIPTION_URL}}
+    expose:
+      - "2114"
+    volumes:
+      - ./geo:/app/geo
+      - ./custom:/app/custom:ro
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:2114/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     stop_grace_period: 30s
 
   caddy:
@@ -22,7 +64,7 @@ services:
     container_name: bobr-cloud-caddy
     restart: unless-stopped
     depends_on:
-      checker:
+      checker-my:
         condition: service_healthy
     environment:
       DOMAIN: ${DOMAIN}

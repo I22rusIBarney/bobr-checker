@@ -1,14 +1,68 @@
-/* Bobr Cloud Checker — restrained dark theme */
+/* Bobr Cloud Checker — restrained theme overrides */
 :root {
   --bg-primary: #0b1010;
   --bg-secondary: #111a18;
   --bg-tertiary: #172320;
+  --border: rgba(180, 210, 193, 0.13);
+  --border-hover: rgba(180, 210, 193, 0.3);
   --text-primary: #edf5f0;
   --text-secondary: #a7b8ae;
+  --text-muted: #6b7f74;
   --color-green: #54c58a;
   --color-red: #ef6b70;
   --color-yellow: #e7bd65;
-  --border-color: rgba(180, 210, 193, .13);
-  color-scheme: dark;
+  --hover-bg: rgba(255, 255, 255, 0.06);
+  --segment-empty: #23332c;
+  --accent: #54c58a;
+  --filter-online-bg: rgba(84, 197, 138, 0.15);
+  --filter-offline-bg: rgba(239, 107, 112, 0.15);
+  --btn-active-bg: rgba(84, 197, 138, 0.15);
+  --btn-active-border: rgba(84, 197, 138, 0.4);
 }
-body { background: var(--bg-primary); }
+
+.light {
+  --bg-primary: #f2f6f4;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #e2ece7;
+  --border: #cad8d1;
+  --border-hover: #9bb5a7;
+  --text-primary: #0f1c16;
+  --text-secondary: #3b5045;
+  --text-muted: #72897c;
+  --color-green: #1a9e59;
+  --color-red: #d9383e;
+  --color-yellow: #c9880e;
+  --hover-bg: rgba(0, 0, 0, 0.04);
+  --segment-empty: #b8c9c0;
+  --accent: #1a9e59;
+  --filter-online-bg: rgba(26, 158, 89, 0.15);
+  --filter-offline-bg: rgba(217, 56, 62, 0.15);
+  --btn-active-bg: rgba(26, 158, 89, 0.12);
+  --btn-active-border: rgba(26, 158, 89, 0.35);
+}
+
+/* Smooth transitions for interactive elements */
+.btn, .card, .card-flat, .group-header, .proxy-card {
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease, opacity 0.15s ease;
+}
+
+/* Group header hover effect */
+.group-header:hover {
+  background: var(--hover-bg);
+}
+
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hover);
+}
