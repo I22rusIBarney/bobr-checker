@@ -107,6 +107,7 @@ if [[ -f "$INSTALL_DIR/.env" && -f "$INSTALL_DIR/docker-compose.yml" ]]; then
     docker compose config -q || die "Конфигурация предыдущей установки некорректна. Проверьте $INSTALL_DIR/.env."
     docker compose pull
     docker compose up -d --remove-orphans
+    docker compose restart caddy >/dev/null 2>&1 || true
     mkdir -p /etc/bobr-checker
     printf '%s\n' "$SRC_DIR" > /etc/bobr-checker/source-dir
     install -m 755 "$SRC_DIR/cli.sh" /usr/local/bin/bobr-checker
@@ -258,6 +259,7 @@ info "Загружаю образы и запускаю Bobr Checker..."
 cd "$INSTALL_DIR"
 docker compose pull
 docker compose up -d --remove-orphans
+docker compose restart caddy >/dev/null 2>&1 || true
 ok "Контейнеры запущены."
 
 info "Жду готовности Checker..."

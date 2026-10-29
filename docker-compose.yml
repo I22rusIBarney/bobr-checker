@@ -7,6 +7,7 @@ services:
     environment:
       - METRICS_PORT=2112
       - SUBSCRIPTION_URL=${SUB_URL_MY:-${SUBSCRIPTION_URL}}
+      - WEB_CUSTOM_ASSETS_PATH=/app/custom
     expose:
       - "2112"
     volumes:
@@ -17,6 +18,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 45s
     stop_grace_period: 30s
 
   checker-friend1:
@@ -27,6 +29,7 @@ services:
     environment:
       - METRICS_PORT=2113
       - SUBSCRIPTION_URL=${SUB_URL_FRIEND1:-${SUBSCRIPTION_URL}}
+      - WEB_CUSTOM_ASSETS_PATH=/app/custom
     expose:
       - "2113"
     volumes:
@@ -37,6 +40,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 45s
     stop_grace_period: 30s
 
   checker-friend2:
@@ -47,6 +51,7 @@ services:
     environment:
       - METRICS_PORT=2114
       - SUBSCRIPTION_URL=${SUB_URL_FRIEND2:-${SUBSCRIPTION_URL}}
+      - WEB_CUSTOM_ASSETS_PATH=/app/custom
     expose:
       - "2114"
     volumes:
@@ -57,6 +62,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 45s
     stop_grace_period: 30s
 
   caddy:
