@@ -16,27 +16,6 @@ get_domain() {
   awk -F= '$1=="DOMAIN"{print $2}' "$DIR/.env" | tr -d "'\" "
 }
 
-# Add Group API to compose if not exists
-update_compose() {
-  if ! grep -q "group-api:" "$DIR/docker-compose.yml"; then
-    cat >> "$DIR/docker-compose.yml" <<EOF
-
-  group-api:
-    image: python:3.9-alpine
-    container_name: bobr-cloud-group-api
-    restart: unless-stopped
-    volumes:
-      - ./data:/data
-    command: ["python3", "-c", "import sys, os; sys.path.append('/app'); from api import server; server.run()"]
-    environment:
-      - DATA_DIR=/data
-      - PORT=2115
-    expose:
-      - "2115"
-EOF
-  fi
-}
-
 case "${1:-help}" in
   status) docker compose ps ;;
   logs) docker compose logs -f --tail=200 ;;
@@ -57,7 +36,6 @@ case "${1:-help}" in
     cp -a "$SRC_DIR/custom/." "$DIR/custom/"
     cp -a "$SRC_DIR/api/." "$DIR/api/"
     install -m 644 "$SRC_DIR/docker-compose.yml" "$DIR/docker-compose.yml"
-    update_compose
     [[ ! -f "$SRC_DIR/Caddyfile" ]] || install -m 644 "$SRC_DIR/Caddyfile" "$DIR/Caddyfile"
     [[ ! -f "$SRC_DIR/README.md" ]] || install -m 644 "$SRC_DIR/README.md" "$DIR/README.md"
     chown -R 1000:1000 "$DIR/custom" "$DIR/data" "$DIR/api"

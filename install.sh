@@ -98,11 +98,12 @@ if [[ -f "$INSTALL_DIR/.env" && -f "$INSTALL_DIR/docker-compose.yml" ]]; then
     # are returned as individual outbounds instead of a collapsed share link.
     cp -a "$INSTALL_DIR/.env" "$INSTALL_DIR/.env.backup.$(date +%Y%m%d%H%M%S)"
     # Refresh the dashboard template/assets from the repository on every rerun.
-    mkdir -p "$INSTALL_DIR/custom"
+    mkdir -p "$INSTALL_DIR/custom" "$INSTALL_DIR/api" "$INSTALL_DIR/data"
     cp -a "$SRC_DIR/custom/." "$INSTALL_DIR/custom/"
+    cp -a "$SRC_DIR/api/." "$INSTALL_DIR/api/"
     cp -a "$SRC_DIR/Caddyfile" "$INSTALL_DIR/Caddyfile"
     cp -a "$SRC_DIR/docker-compose.yml" "$INSTALL_DIR/docker-compose.yml"
-    chown -R 1000:1000 "$INSTALL_DIR/custom"
+    chown -R 1000:1000 "$INSTALL_DIR/custom" "$INSTALL_DIR/api" "$INSTALL_DIR/data"
     set_env "SUBSCRIPTION_JSON_FORMAT" "true"
     docker compose config -q || die "Конфигурация предыдущей установки некорректна. Проверьте $INSTALL_DIR/.env."
     docker compose pull
@@ -215,12 +216,13 @@ else
   warn "UFW не установлен. Локальный firewall не настраивался."
 fi
 
-mkdir -p "$INSTALL_DIR/geo" "$INSTALL_DIR/custom" "$INSTALL_DIR/caddy_data" "$INSTALL_DIR/caddy_config"
+mkdir -p "$INSTALL_DIR/geo" "$INSTALL_DIR/custom" "$INSTALL_DIR/api" "$INSTALL_DIR/data" "$INSTALL_DIR/caddy_data" "$INSTALL_DIR/caddy_config"
 cp "$SRC_DIR/docker-compose.yml" "$INSTALL_DIR/docker-compose.yml"
 cp "$SRC_DIR/Caddyfile" "$INSTALL_DIR/Caddyfile"
 cp "$SRC_DIR/README.md" "$INSTALL_DIR/README.md"
-cp "$SRC_DIR/custom/"* "$INSTALL_DIR/custom/"
-chown -R 1000:1000 "$INSTALL_DIR/geo" "$INSTALL_DIR/custom"
+cp -a "$SRC_DIR/custom/." "$INSTALL_DIR/custom/"
+cp -a "$SRC_DIR/api/." "$INSTALL_DIR/api/"
+chown -R 1000:1000 "$INSTALL_DIR/geo" "$INSTALL_DIR/custom" "$INSTALL_DIR/api" "$INSTALL_DIR/data"
 
 if [[ ! -f "$INSTALL_DIR/.env" ]]; then
   cat > "$INSTALL_DIR/.env" <<EOF

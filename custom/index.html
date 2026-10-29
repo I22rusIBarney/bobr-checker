@@ -573,6 +573,64 @@
       </template>
     </div>
 
+    <!-- Modal: Переименование группы -->
+    <div
+      x-show="groupEditMode"
+      x-transition.opacity
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+      @click.self="groupEditMode = false"
+      @keydown.escape.window="groupEditMode = false"
+      x-cloak
+    >
+      <div class="card rounded-2xl max-w-sm w-full p-5 sm:p-6 shadow-2xl space-y-4">
+        <div class="flex items-center justify-between border-b border-default pb-3">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-online" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            <h3 class="text-sm font-semibold text-primary">Переименовать группу</h3>
+          </div>
+          <button @click="groupEditMode = false" class="btn h-7 w-7 rounded-lg flex items-center justify-center text-muted hover:text-primary">✕</button>
+        </div>
+
+        <form @submit.prevent="saveGroupName()" class="space-y-4">
+          <div>
+            <label class="block text-xs font-medium text-muted mb-1.5">Новое название (до 40 символов)</label>
+            <input
+              type="text"
+              maxlength="40"
+              x-model="editGroupName"
+              required
+              class="w-full px-3 py-2 rounded-lg text-sm bg-black/20 focus:outline-none focus:border-online"
+              placeholder="Например: Германия"
+              autofocus
+            />
+            <div class="flex justify-between items-center text-[10px] text-muted mt-1">
+              <span>Идентификатор: <code x-text="editingGroup?.id" class="text-primary font-mono"></code></span>
+              <span x-text="editGroupName.length + '/40'"></span>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-2 pt-2 border-t border-default">
+            <button
+              type="button"
+              @click="groupEditMode = false"
+              class="btn px-3 py-1.5 rounded-lg text-xs font-medium"
+            >
+              Отмена
+            </button>
+            <button
+              type="submit"
+              :disabled="!editGroupName.trim()"
+              class="btn px-4 py-1.5 rounded-lg text-xs font-medium btn-active disabled:opacity-50"
+            >
+              Сохранить
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <!-- Modal: API для ботов -->
     <div
       x-show="apiModalOpen"
@@ -750,44 +808,49 @@
         </div>
       </header>
 
-      <!-- Stats -->
-      <div x-show="showStats" class="grid grid-cols-4 gap-2 sm:gap-3 mb-6">
-        <div class="card rounded-lg p-2 sm:p-4 text-center">
-          <div
-            class="text-base sm:text-xl font-semibold text-primary"
-            x-text="stats.total"
-          >
-            0
-          </div>
-          <div class="text-xs text-muted mt-0.5 flex items-center justify-center gap-1">
-            <span>Total</span>
-            <span x-show="stats.hiddenCount > 0" class="text-[10px] text-yellow-500 font-medium" :title="stats.hiddenCount + ' скрыто'" x-text="'(' + stats.hiddenCount + ')'"></span>
-          </div>
-        </div>
-        <div class="card rounded-lg p-2 sm:p-4 text-center">
-          <div
-            class="text-base sm:text-xl font-semibold text-online"
-            x-text="stats.online"
-          >
-            0
-          </div>
-          <div class="text-xs text-muted mt-0.5">Online</div>
-        </div>
-        <div class="card rounded-lg p-2 sm:p-4 text-center">
-          <div
-            class="text-base sm:text-xl font-semibold text-offline"
-            x-text="stats.offline"
-          >
-            0
-          </div>
-          <div class="text-xs text-muted mt-0.5">Offline</div>
-        </div>
-        <div class="card rounded-lg p-2 sm:p-4 text-center">
-          <div class="text-base sm:text-xl font-semibold text-primary">
-            <span x-text="stats.avgLatency">0</span
-            ><span class="text-xs sm:text-sm text-muted ml-0.5">ms</span>
-          </div>
-          <div class="text-xs text-muted mt-0.5">Avg Latency</div>
+      <!-- Compact Status Bar -->
+      <div x-show="showStats" class="flex flex-wrap items-center gap-2 mb-4 p-2 rounded-xl card-flat text-xs">
+        <button
+          type="button"
+          @click="setFilter('all')"
+          :class="filter === 'all' ? 'border-primary text-primary font-semibold' : 'text-muted hover:text-primary'"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-transparent transition-all"
+        >
+          <span>Всего:</span>
+          <span class="font-bold tabular-nums" x-text="stats.total"></span>
+          <span x-show="stats.hiddenCount > 0" class="text-[10px] text-yellow-500 font-medium" :title="stats.hiddenCount + ' скрыто'" x-text="'(' + stats.hiddenCount + ')'"></span>
+        </button>
+
+        <div class="h-4 w-[1px] bg-border"></div>
+
+        <button
+          type="button"
+          @click="setFilter('online')"
+          :class="filter === 'online' ? 'bg-online/10 border-online text-online font-semibold' : 'text-online hover:bg-online/5'"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-transparent transition-all"
+        >
+          <span class="w-2 h-2 rounded-full bg-online"></span>
+          <span>Онлайн:</span>
+          <span class="font-bold tabular-nums" x-text="stats.online"></span>
+        </button>
+
+        <button
+          type="button"
+          @click="setFilter('offline')"
+          :class="filter === 'offline' ? 'bg-offline/10 border-offline text-offline font-semibold' : 'text-offline hover:bg-offline/5'"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-transparent transition-all"
+          :title="stats.offline > 0 ? 'Кликните, чтобы показать только офлайн' : ''"
+        >
+          <span class="w-2 h-2 rounded-full bg-offline"></span>
+          <span>Офлайн:</span>
+          <span class="font-bold tabular-nums" x-text="stats.offline"></span>
+        </button>
+
+        <div class="h-4 w-[1px] bg-border"></div>
+
+        <div class="flex items-center gap-1.5 px-3 py-1.5 text-muted">
+          <span>Ср. пинг:</span>
+          <span class="font-bold tabular-nums text-primary" x-text="stats.avgLatency + ' ms'"></span>
         </div>
       </div>
 
@@ -912,16 +975,28 @@
           </button>
 
           <template x-for="g in groupSources" :key="g.id">
-            <button
-              type="button"
-              @click="selectedGroup = g.id"
-              :class="selectedGroup === g.id ? 'btn-active font-semibold shadow-sm' : 'text-muted hover:text-primary'"
-              class="px-4 py-2 rounded-xl text-xs whitespace-nowrap transition-all flex items-center gap-2 active:scale-95"
-            >
-              <div class="w-1.5 h-1.5 rounded-full" :class="proxies.filter(p => p.sourceId === g.id).length > 0 ? 'bg-online animate-pulse' : 'bg-muted'"></div>
-              <span x-text="g.name"></span>
-              <span class="px-1.5 py-0.5 rounded-lg bg-black/10 text-[10px] opacity-70 tabular-nums font-bold" x-text="proxies.filter(p => p.sourceId === g.id).length"></span>
-            </button>
+            <div class="flex items-center gap-1">
+              <button
+                type="button"
+                @click="selectedGroup = g.id"
+                :class="selectedGroup === g.id ? 'btn-active font-semibold shadow-sm' : 'text-muted hover:text-primary'"
+                class="px-3.5 py-2 rounded-xl text-xs whitespace-nowrap transition-all flex items-center gap-2 active:scale-95"
+              >
+                <div class="w-1.5 h-1.5 rounded-full" :class="proxies.filter(p => p.sourceId === g.id).length > 0 ? 'bg-online animate-pulse' : 'bg-muted'"></div>
+                <span x-text="g.name"></span>
+                <span class="px-1.5 py-0.5 rounded-lg bg-black/10 text-[10px] opacity-70 tabular-nums font-bold" x-text="proxies.filter(p => p.sourceId === g.id).length"></span>
+              </button>
+              <button
+                type="button"
+                @click.stop="openRenameModal(g.id)"
+                class="p-1 rounded-lg text-muted hover:text-primary hover:bg-hover-bg transition-colors"
+                title="Переименовать группу"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+              </button>
+            </div>
           </template>
         </div>
 
@@ -1422,6 +1497,9 @@
           search: '',
           searchOpen: false,
           apiModalOpen: false,
+          groupEditMode: false,
+          editingGroup: null,
+          editGroupName: '',
           selectedGroup: 'all',
           groupSources: [
             { id: 'my', name: 'Моя группа', apiPath: '/api/my/api/v1/public/proxies', fallbackPath: './api/v1/public/proxies', enabled: true },
@@ -1754,8 +1832,61 @@
 
             if (this.autoRefresh) this.startCountdown();
             // Fetch from all configured groups on startup
-            this.refreshData();
+            this.loadGroups().then(() => this.refreshData());
             setTimeout(() => this.initialLoad = false, 500);
+          },
+
+          async loadGroups() {
+            try {
+              const res = await fetch('/api/groups');
+              if (res.ok) {
+                const json = await res.json();
+                if (json.success && Array.isArray(json.groups)) {
+                  json.groups.forEach(g => {
+                    const src = this.groupSources.find(s => s.id === g.id);
+                    if (src) src.name = g.name;
+                  });
+                }
+              }
+            } catch (e) {
+              console.warn('Failed to load persistent group names:', e);
+            }
+          },
+
+          openRenameModal(groupId) {
+            const group = this.groupSources.find(s => s.id === groupId);
+            if (!group) return;
+            this.editingGroup = group;
+            this.editGroupName = group.name;
+            this.groupEditMode = true;
+          },
+
+          async saveGroupName() {
+            if (!this.editingGroup || !this.editGroupName.trim()) return;
+            const newName = this.editGroupName.trim();
+            const groupId = this.editingGroup.id;
+
+            try {
+              const res = await fetch('/api/groups', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: groupId, name: newName })
+              });
+              const json = await res.json();
+              if (json.success) {
+                this.editingGroup.name = newName;
+                this.groupEditMode = false;
+                this.showToast('Название группы сохранено!');
+                // Update local proxies to reflect new group name instantly
+                this.proxies.forEach(p => {
+                  if (p.sourceId === groupId) p.sourceName = newName;
+                });
+              } else {
+                alert('Ошибка: ' + (json.error || 'Не удалось сохранить'));
+              }
+            } catch (e) {
+              alert('Ошибка сети при сохранении');
+            }
           },
 
           toggleDarkMode() {

@@ -78,7 +78,6 @@ services:
       - PORT=2115
     expose:
       - "2115"
-    restart: unless-stopped
 
   caddy:
     image: caddy:2-alpine
