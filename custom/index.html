@@ -48,46 +48,46 @@
 
       /* Dark theme */
       :root {
-        --bg-primary: #0f1114;
-        --bg-secondary: #1a1d21;
-        --bg-tertiary: #23262b;
-        --border: #2d3138;
-        --border-hover: #3e434b;
-        --text-primary: #cdcdcd;
-        --text-secondary: #9ca3af;
-        --text-muted: #5c6370;
-        --hover-bg: rgba(255, 255, 255, 0.08);
-        --segment-empty: #3e434b;
-        --accent: #294bff;
-        --color-green: #3aff82;
-        --color-red: #ff3232;
-        --color-yellow: #ffae00;
-        --filter-online-bg: rgba(58, 255, 130, 0.15);
-        --filter-offline-bg: rgba(255, 50, 50, 0.15);
-        --btn-active-bg: rgba(58, 255, 130, 0.1);
-        --btn-active-border: rgba(58, 255, 130, 0.3);
+        --bg-primary: #090d0b;
+        --bg-secondary: #111714;
+        --bg-tertiary: #161e1a;
+        --border: rgba(180, 215, 195, 0.12);
+        --border-hover: rgba(180, 215, 195, 0.25);
+        --text-primary: #edf5f0;
+        --text-secondary: #9cb0a3;
+        --text-muted: #5e7568;
+        --hover-bg: rgba(255, 255, 255, 0.04);
+        --segment-empty: #212c26;
+        --accent: #22c55e;
+        --color-green: #22c55e;
+        --color-red: #f43f5e;
+        --color-yellow: #eab308;
+        --filter-online-bg: rgba(34, 197, 94, 0.12);
+        --filter-offline-bg: rgba(244, 63, 94, 0.12);
+        --btn-active-bg: rgba(34, 197, 94, 0.12);
+        --btn-active-border: rgba(34, 197, 94, 0.35);
       }
 
       /* Light theme */
       .light {
-        --bg-primary: #f5f8fa;
+        --bg-primary: #f4f7f5;
         --bg-secondary: #ffffff;
-        --bg-tertiary: #edf1f7;
-        --border: #d0d9e8;
-        --border-hover: #b8c4d6;
-        --text-primary: #0a0a0a;
-        --text-secondary: #4b5563;
-        --text-muted: #8c95a4;
-        --hover-bg: rgba(0, 0, 0, 0.05);
-        --segment-empty: #c4cdd9;
-        --accent: #294bff;
-        --color-green: #00a63d;
-        --color-red: #ff0000;
-        --color-yellow: #ea8900;
-        --filter-online-bg: rgba(0, 166, 61, 0.15);
-        --filter-offline-bg: rgba(255, 0, 0, 0.15);
-        --btn-active-bg: rgba(0, 166, 61, 0.1);
-        --btn-active-border: rgba(0, 166, 61, 0.3);
+        --bg-tertiary: #edf3ef;
+        --border: #d4ded8;
+        --border-hover: #b5c7bd;
+        --text-primary: #0f1914;
+        --text-secondary: #3b4e43;
+        --text-muted: #6f8779;
+        --hover-bg: rgba(0, 0, 0, 0.035);
+        --segment-empty: #d4ded8;
+        --accent: #16a34a;
+        --color-green: #16a34a;
+        --color-red: #e11d48;
+        --color-yellow: #ca8a04;
+        --filter-online-bg: rgba(22, 163, 74, 0.1);
+        --filter-offline-bg: rgba(225, 29, 72, 0.1);
+        --btn-active-bg: rgba(22, 163, 74, 0.1);
+        --btn-active-border: rgba(22, 163, 74, 0.3);
       }
 
       /* color-scheme drives native controls/scrollbars. Set via CSS (not a
@@ -739,17 +739,10 @@
           </div>
         </div>
 
-        <div class="flex items-center gap-2">
-          {{ if not .IsPublic }}
-          <span
-            class="h-9 px-3 text-xs rounded-lg card-flat text-muted flex items-center"
-            >{{.Version}}</span
-          >
-          {{ end }}
-
+        <div class="flex items-center gap-1.5">
           <button
             @click="toggleAutoRefresh()"
-            class="btn h-9 px-3 rounded-lg text-xs font-medium flex items-center gap-1.5"
+            class="btn h-8 px-2.5 rounded-lg text-xs font-medium flex items-center gap-1.5"
             :class="autoRefresh && 'btn-active'"
           >
             <svg
@@ -774,7 +767,7 @@
 
           <button
             @click="toggleDarkMode()"
-            class="btn h-9 w-9 rounded-lg flex items-center justify-center"
+            class="btn h-8 w-8 rounded-lg flex items-center justify-center"
           >
             <svg
               x-show="darkMode"
@@ -809,11 +802,11 @@
       </header>
 
       <!-- Compact Status Bar -->
-      <div x-show="showStats" class="flex flex-wrap items-center gap-2 mb-4 p-2 rounded-xl card-flat text-xs">
+      <div x-show="showStats" class="flex flex-wrap items-center gap-2 mb-4 p-1.5 rounded-xl card-flat text-[11px]">
         <button
           type="button"
           @click="setFilter('all')"
-          :class="filter === 'all' ? 'border-primary text-primary font-semibold' : 'text-muted hover:text-primary'"
+          :class="filter === 'all' ? 'bg-white/5 border-white/10 text-primary font-semibold' : 'text-muted hover:text-primary'"
           class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-transparent transition-all"
         >
           <span>Всего:</span>
@@ -821,15 +814,15 @@
           <span x-show="stats.hiddenCount > 0" class="text-[10px] text-yellow-500 font-medium" :title="stats.hiddenCount + ' скрыто'" x-text="'(' + stats.hiddenCount + ')'"></span>
         </button>
 
-        <div class="h-4 w-[1px] bg-border"></div>
+        <div class="h-4 w-[1px] bg-white/10"></div>
 
         <button
           type="button"
           @click="setFilter('online')"
-          :class="filter === 'online' ? 'bg-online/10 border-online text-online font-semibold' : 'text-online hover:bg-online/5'"
+          :class="filter === 'online' ? 'bg-online/10 border-online/30 text-online font-semibold' : 'text-online hover:bg-online/5'"
           class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-transparent transition-all"
         >
-          <span class="w-2 h-2 rounded-full bg-online"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-online"></span>
           <span>Онлайн:</span>
           <span class="font-bold tabular-nums" x-text="stats.online"></span>
         </button>
@@ -837,16 +830,16 @@
         <button
           type="button"
           @click="setFilter('offline')"
-          :class="filter === 'offline' ? 'bg-offline/10 border-offline text-offline font-semibold' : 'text-offline hover:bg-offline/5'"
+          :class="filter === 'offline' ? 'bg-offline/10 border-offline/30 text-offline font-semibold' : 'text-offline hover:bg-offline/5'"
           class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-transparent transition-all"
           :title="stats.offline > 0 ? 'Кликните, чтобы показать только офлайн' : ''"
         >
-          <span class="w-2 h-2 rounded-full bg-offline"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-offline"></span>
           <span>Офлайн:</span>
           <span class="font-bold tabular-nums" x-text="stats.offline"></span>
         </button>
 
-        <div class="h-4 w-[1px] bg-border"></div>
+        <div class="h-4 w-[1px] bg-white/10"></div>
 
         <div class="flex items-center gap-1.5 px-3 py-1.5 text-muted">
           <span>Ср. пинг:</span>
@@ -959,40 +952,37 @@
       </div>
 
       <!-- Group Switcher Tabs -->
-      <div class="flex items-center gap-2 mb-4">
-        <div class="flex-1 flex items-center gap-1.5 p-1.5 rounded-2xl card-flat overflow-x-auto no-scrollbar shadow-inner">
+      <div class="flex items-center gap-2 mb-3">
+        <div class="flex-1 flex items-center gap-1 p-1 rounded-xl card-flat overflow-x-auto no-scrollbar">
           <button
             type="button"
             @click="selectedGroup = 'all'"
-            :class="selectedGroup === 'all' ? 'filter-all font-semibold shadow-sm' : 'text-muted hover:text-primary'"
-            class="px-4 py-2 rounded-xl text-xs whitespace-nowrap transition-all flex items-center gap-2 active:scale-95"
+            :class="selectedGroup === 'all' ? 'bg-white/10 text-primary font-medium shadow-sm' : 'text-muted hover:text-primary'"
+            class="px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-all flex items-center gap-1.5 flex-shrink-0"
           >
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
-            <span>Все группы</span>
-            <span class="px-1.5 py-0.5 rounded-lg bg-black/20 text-[10px] opacity-80 tabular-nums font-bold" x-text="proxies.length"></span>
+            <span>Все</span>
+            <span class="px-1.5 py-0.2 rounded bg-black/20 text-[10px] opacity-70 tabular-nums font-mono" x-text="proxies.length"></span>
           </button>
 
           <template x-for="g in groupSources" :key="g.id">
-            <div class="flex items-center gap-1">
+            <div class="flex items-center gap-0.5 flex-shrink-0">
               <button
                 type="button"
                 @click="selectedGroup = g.id"
-                :class="selectedGroup === g.id ? 'btn-active font-semibold shadow-sm' : 'text-muted hover:text-primary'"
-                class="px-3.5 py-2 rounded-xl text-xs whitespace-nowrap transition-all flex items-center gap-2 active:scale-95"
+                :class="selectedGroup === g.id ? 'btn-active font-medium shadow-sm' : 'text-muted hover:text-primary'"
+                class="px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-all flex items-center gap-1.5"
               >
                 <div class="w-1.5 h-1.5 rounded-full" :class="proxies.filter(p => p.sourceId === g.id).length > 0 ? 'bg-online animate-pulse' : 'bg-muted'"></div>
                 <span x-text="g.name"></span>
-                <span class="px-1.5 py-0.5 rounded-lg bg-black/10 text-[10px] opacity-70 tabular-nums font-bold" x-text="proxies.filter(p => p.sourceId === g.id).length"></span>
+                <span class="px-1.5 py-0.2 rounded bg-black/20 text-[10px] opacity-70 tabular-nums font-mono" x-text="proxies.filter(p => p.sourceId === g.id).length"></span>
               </button>
               <button
                 type="button"
                 @click.stop="openRenameModal(g.id)"
-                class="p-1 rounded-lg text-muted hover:text-primary hover:bg-hover-bg transition-colors"
+                class="p-1 rounded-md text-muted/60 hover:text-primary hover:bg-white/5 transition-colors"
                 title="Переименовать группу"
               >
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                 </svg>
               </button>
@@ -1003,10 +993,10 @@
         <!-- Groups Settings Quick Access -->
         <button
           @click="apiModalOpen = true"
-          class="btn h-[48px] w-[48px] rounded-2xl flex items-center justify-center text-muted hover:text-primary hover:bg-hover-bg transition-all active:rotate-45"
+          class="btn h-9 w-9 rounded-xl flex items-center justify-center text-muted hover:text-primary flex-shrink-0"
           title="Настройка групп и API"
         >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.756 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
