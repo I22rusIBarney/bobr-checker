@@ -288,17 +288,6 @@
         color: var(--color-green);
       }
 
-      .visibility-fab {
-        position: fixed;
-        z-index: 60;
-        right: 16px;
-        bottom: calc(env(safe-area-inset-bottom, 0px) + 96px);
-        box-shadow: 0 8px 28px rgba(0,0,0,.38);
-      }
-      @media (min-width: 640px) {
-        .visibility-fab { bottom: 24px; }
-      }
-
       /* Pulse animation for online status */
       .pulse::after {
         content: "";
@@ -557,22 +546,6 @@
         </div>
       </div>
     </template>
-
-    <!-- Always-accessible host visibility control; independent of the servers header. -->
-    <button
-      type="button"
-      x-show="!badgeMode"
-      @click="settingsOpen = !settingsOpen; if (settingsOpen) $nextTick(() => document.getElementById('server-visibility-settings')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }))"
-      class="visibility-fab btn px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-2 shadow-lg"
-      :class="settingsOpen ? 'btn-active' : (stats.hiddenCount > 0 ? 'border-yellow-500/50' : '')"
-      aria-label="Управление отображением серверов"
-    >
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M7 12h10m-7 6h4"/>
-      </svg>
-      <span>Хосты</span>
-      <span x-show="stats.hiddenCount > 0" class="ml-0.5 px-1.5 py-0.5 text-[10px] rounded-full bg-yellow-500/20 text-yellow-400 font-mono" x-text="stats.hiddenCount"></span>
-    </button>
 
     <!-- Toast -->
     <div x-show="!badgeMode" class="fixed top-4 right-4 z-50">
@@ -924,27 +897,46 @@
 
       {{ if .Endpoints }}
       <!-- Group Switcher Tabs -->
-      <div class="flex items-center gap-1.5 p-1 rounded-xl card-flat mb-3 overflow-x-auto">
-        <button
-          type="button"
-          @click="selectedGroup = 'all'"
-          :class="selectedGroup === 'all' ? 'filter-all font-semibold' : 'text-muted hover:text-primary'"
-          class="px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors flex items-center gap-1.5"
-        >
-          <span>Все группы</span>
-          <span class="text-[11px] opacity-75 tabular-nums" x-text="'(' + proxies.length + ')'"></span>
-        </button>
-        <template x-for="g in groupSources" :key="g.id">
+      <div class="flex items-center gap-2 mb-4">
+        <div class="flex-1 flex items-center gap-1.5 p-1.5 rounded-2xl card-flat overflow-x-auto no-scrollbar shadow-inner">
           <button
             type="button"
-            @click="selectedGroup = g.id"
-            :class="selectedGroup === g.id ? 'btn-active font-semibold' : 'text-muted hover:text-primary'"
-            class="px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors flex items-center gap-1.5"
+            @click="selectedGroup = 'all'"
+            :class="selectedGroup === 'all' ? 'filter-all font-semibold shadow-sm' : 'text-muted hover:text-primary'"
+            class="px-4 py-2 rounded-xl text-xs whitespace-nowrap transition-all flex items-center gap-2 active:scale-95"
           >
-            <span x-text="g.name"></span>
-            <span class="text-[11px] opacity-75 tabular-nums" x-text="'(' + proxies.filter(p => p.sourceId === g.id).length + ')'"></span>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            <span>Все группы</span>
+            <span class="px-1.5 py-0.5 rounded-lg bg-black/20 text-[10px] opacity-80 tabular-nums font-bold" x-text="proxies.length"></span>
           </button>
-        </template>
+
+          <template x-for="g in groupSources" :key="g.id">
+            <button
+              type="button"
+              @click="selectedGroup = g.id"
+              :class="selectedGroup === g.id ? 'btn-active font-semibold shadow-sm' : 'text-muted hover:text-primary'"
+              class="px-4 py-2 rounded-xl text-xs whitespace-nowrap transition-all flex items-center gap-2 active:scale-95"
+            >
+              <div class="w-1.5 h-1.5 rounded-full" :class="proxies.filter(p => p.sourceId === g.id).length > 0 ? 'bg-online animate-pulse' : 'bg-muted'"></div>
+              <span x-text="g.name"></span>
+              <span class="px-1.5 py-0.5 rounded-lg bg-black/10 text-[10px] opacity-70 tabular-nums font-bold" x-text="proxies.filter(p => p.sourceId === g.id).length"></span>
+            </button>
+          </template>
+        </div>
+
+        <!-- Groups Settings Quick Access -->
+        <button
+          @click="apiModalOpen = true"
+          class="btn h-[48px] w-[48px] rounded-2xl flex items-center justify-center text-muted hover:text-primary hover:bg-hover-bg transition-all active:rotate-45"
+          title="Настройка групп и API"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.756 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </button>
       </div>
 
       <!-- Controls -->
@@ -1061,6 +1053,21 @@
               <option value="latency-desc">Latency ↓</option>
               <option value="status">Status</option>
             </select>
+
+            <!-- Embedded Host Filter Button -->
+            <button
+              type="button"
+              @click="settingsOpen = !settingsOpen; if (settingsOpen) $nextTick(() => document.getElementById('server-visibility-settings')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }))"
+              class="btn px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-1.5 flex-shrink-0"
+              :class="settingsOpen ? 'btn-active' : (stats.hiddenCount > 0 ? 'border-yellow-500/50 text-yellow-400' : '')"
+              title="Фильтры и видимость серверов"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+              </svg>
+              <span>Хосты</span>
+              <span x-show="stats.hiddenCount > 0" class="px-1.5 py-0.2 text-[10px] rounded-full bg-yellow-500/20 text-yellow-400 font-mono" x-text="stats.hiddenCount"></span>
+            </button>
           </div>
         </div>
       </div>
